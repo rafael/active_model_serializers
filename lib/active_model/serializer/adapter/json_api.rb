@@ -4,9 +4,22 @@ module ActiveModel
   class Serializer
     class Adapter
       class JsonApi < Adapter
+        @root = :data
+
+        def self.params(permitted, associations)
+          relationships = {}
+          associations.each do |assoc|
+             relationships[assoc] = { data: [:type, :id] }
+           end
+
+          return :type, {attributes: permitted}, {relationships: relationships}
+        end
+
         def initialize(serializer, options = {})
           super
-          @hash = { data: [] }
+          @root = self.class.root
+          @hash = {}
+          @hash[@root] = []
 
           if fields = options.delete(:fields)
             @fieldset = ActiveModel::Serializer::Fieldset.new(fields, serializer.json_key)
@@ -20,7 +33,7 @@ module ActiveModel
           if serializer.respond_to?(:each)
             serializer.each do |s|
               result = self.class.new(s, @options.merge(fieldset: @fieldset)).serializable_hash(options)
-              @hash[:data] << result[:data]
+              @hash[@root] << result[@root]
 
               if result[:included]
                 @hash[:included] ||= []
@@ -28,8 +41,8 @@ module ActiveModel
               end
             end
           else
-            @hash[:data] = attributes_for_serializer(serializer, options)
-            add_resource_relationships(@hash[:data], serializer)
+            @hash[@root] = attributes_for_serializer(serializer, options)
+            add_resource_relationships(@hash[@root], serializer)
           end
           @hash
         end
@@ -44,15 +57,17 @@ module ActiveModel
         def add_relationships(resource, name, serializers)
           resource[:relationships] ||= {}
           resource[:relationships][name] ||= { data: [] }
-          resource[:relationships][name][:data] += serializers.map { |serializer| { type: serializer.json_api_type, id: serializer.id.to_s } }
+          resource[:relationships][name][@root] ||= []
+          resource[:relationships][name][@root] += serializers.map { |serializer| { type: serializer.json_api_type, id: serializer.id.to_s } }
         end
 
         def add_relationship(resource, name, serializer, val=nil)
           resource[:relationships] ||= {}
-          resource[:relationships][name] = { data: val }
+          resource[:relationships][name] = {}
+          resource[:relationships][name][@root] = val
 
           if serializer && serializer.object
-            resource[:relationships][name][:data] = { type: serializer.json_api_type, id: serializer.id.to_s }
+            resource[:relationships][name][@root] = { type: serializer.json_api_type, id: serializer.id.to_s }
           end
         end
 
