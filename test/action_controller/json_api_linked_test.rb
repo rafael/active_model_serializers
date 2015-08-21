@@ -1,7 +1,7 @@
 require 'test_helper'
 
 module ActionController
-  module Serialization
+  module Serializer
     class JsonApiLinkedTest < ActionController::TestCase
       class JsonApiLinkedTestController < ActionController::Base
         def setup_post
