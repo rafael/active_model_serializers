@@ -49,4 +49,10 @@ module ARModels
 
     belongs_to :author
   end
+
+  class AuthorSerializer < ActiveModel::Serializer
+    attributes :id, :name
+
+    has_many :posts
+  end
 end
