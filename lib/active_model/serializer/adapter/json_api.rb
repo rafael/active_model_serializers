@@ -20,12 +20,20 @@ module ActiveModel
 
         def serializable_hash(options = nil)
           options ||= {}
+          hash =
+            if serializer.respond_to?(:each)
+              serializable_hash_for_collection(serializer, options)
+            else
+              serializable_hash_for_single_resource(serializer, options)
+            end
 
-          if serializer.respond_to?(:each)
-            serializable_hash_for_collection(options)
-          else
-            serializable_hash_for_single_resource(options)
+          if ActiveModel::Serializer.config.jsonapi_toplevel_member
+            hash[:jsonapi] = {}
+            hash[:jsonapi][:version] = ActiveModel::Serializer.config.jsonapi_version
+            hash[:jsonapi][:meta] = @options[:jsonapi_toplevel_meta] if @options[:jsonapi_toplevel_meta]
           end
+
+          hash
         end
 
         def fragment_cache(cached_hash, non_cached_hash)
