@@ -32,4 +32,14 @@ module ActiveModel::Serializer::Utils
       {}
     end
   end
+
+  def nested_lookup_paths(klass)
+    paths = klass.to_s.split('::').reverse.inject([]) { |a, e| a + [[e] + Array(a.last)] }.reverse
+    paths.map! { |path| "::#{path.join('::')}" }
+    paths.select! { |path| Kernel.const_defined?(path, false) }
+    paths.map! { |path| Kernel.const_get(path) }
+    paths.push(::Object)
+
+    paths
+  end
 end

@@ -14,7 +14,9 @@ module ActiveModel
             @post.comments = [@first_comment, @second_comment]
             @post.author = @author
             @first_comment.post = @post
+            @first_comment.author = @author
             @second_comment.post = @post
+            @second_comment.author = @author
             @blog = Blog.new(id: 1, name: 'My Blog!!')
             @post.blog = @blog
             @tag = Tag.new(id: 1, name: '#hash_tag')

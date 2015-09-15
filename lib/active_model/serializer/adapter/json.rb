@@ -7,6 +7,8 @@ class ActiveModel::Serializer::Adapter::Json < ActiveModel::Serializer::Adapter
           if serializer.respond_to?(:each)
             result = serializer.map { |s| FlattenJson.new(s).serializable_hash(options) }
           else
+            return nil unless serializer
+
             hash = {}
 
             core = cache_check(serializer) do
@@ -14,26 +16,12 @@ class ActiveModel::Serializer::Adapter::Json < ActiveModel::Serializer::Adapter
             end
 
             serializer.associations.each do |association|
-              serializer = association.serializer
-              opts = association.options
-
-              if serializer.respond_to?(:each)
-                array_serializer = serializer
-                hash[association.key] = array_serializer.map do |item|
-                  cache_check(item) do
-                    item.attributes(opts)
-                  end
+              hash[association.key] =
+                if association.options[:virtual_value]
+                  association.options[:virtual_value]
+                elsif association.serializer && association.serializer.object
+                  FlattenJson.new(association.serializer).serializable_hash(association.options)
                 end
-              else
-                hash[association.key] =
-                  if serializer && serializer.object
-                    cache_check(serializer) do
-                      serializer.attributes(options)
-                    end
-                  elsif opts[:virtual_value]
-                    opts[:virtual_value]
-                  end
-              end
             end
             result = core.merge hash
           end

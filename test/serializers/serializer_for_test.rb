@@ -34,6 +34,20 @@ module ActiveModel
         end
 
         def setup
+          @post = Post.new(title: 'New Post', body: 'Body')
+          @author = Author.new(name: 'Jane Blogger')
+          @author.posts = [@post]
+          @post.author = @author
+          @first_comment = Comment.new(id: 1, body: 'ZOMG A COMMENT')
+          @second_comment = Comment.new(id: 2, body: 'ZOMG ANOTHER COMMENT')
+          @post.comments = [@first_comment, @second_comment]
+          @first_comment.post = @post
+          @first_comment.author = @author
+          @second_comment.post = @post
+          @second_comment.author = nil
+          @blog = Blog.new(id: 23, name: 'AMS Blog')
+          @post.blog = @blog
+
           @profile = Profile.new
           @my_profile = MyProfile.new
           @custom_profile = CustomProfile.new
@@ -58,6 +72,16 @@ module ActiveModel
         def test_serializer_custom_serializer
           serializer = ActiveModel::Serializer.serializer_for(@custom_profile)
           assert_equal ProfileSerializer, serializer
+        end
+
+        def test_serializer_nested_serializer
+          serializer = PostSerializer.serializer_for(@first_comment)
+          assert_equal(PostSerializer::CommentSerializer, serializer)
+        end
+
+        def test_serializer_toplevel_serializer
+          serializer = ActiveModel::Serializer.serializer_for(@first_comment)
+          assert_equal(CommentSerializer, serializer)
         end
       end
     end

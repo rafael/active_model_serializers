@@ -89,13 +89,26 @@ end
 module Spam; end
 Spam::UnrelatedLink = Class.new(Model)
 
-PostSerializer = Class.new(ActiveModel::Serializer) do
+class PostSerializer < ActiveModel::Serializer
   cache key: 'post', expires_in: 0.1, skip_digest: true
   attributes :id, :title, :body
 
   has_many :comments
+  class CommentSerializer < ActiveModel::Serializer
+    attributes :id, :body
+  end
+
   belongs_to :blog
+  class BlogSerializer < ActiveModel::Serializer
+    attributes :id, :name
+    belongs_to :writer
+    has_many :articles
+  end
+
   belongs_to :author
+  class AuthorSerializer < ActiveModel::Serializer
+    attributes :id, :name
+  end
 
   def blog
     Blog.new(id: 999, name: 'Custom blog')
@@ -106,7 +119,7 @@ PostSerializer = Class.new(ActiveModel::Serializer) do
   end
 end
 
-SpammyPostSerializer = Class.new(ActiveModel::Serializer) do
+class SpammyPostSerializer < ActiveModel::Serializer
   attributes :id
   has_many :related
 
@@ -115,11 +128,15 @@ SpammyPostSerializer = Class.new(ActiveModel::Serializer) do
   end
 end
 
-CommentSerializer = Class.new(ActiveModel::Serializer) do
+class CommentSerializer < ActiveModel::Serializer
   cache expires_in: 1.day, skip_digest: true
   attributes :id, :body
 
   belongs_to :post
+  class PostSerializer < ActiveModel::Serializer
+    attributes :id, :title
+  end
+
   belongs_to :author
 
   def custom_options
@@ -132,9 +149,9 @@ AuthorSerializer = Class.new(ActiveModel::Serializer) do
   attribute :id
   attribute :name
 
-  has_many :posts
-  has_many :roles
-  has_one :bio
+#  has_many :posts
+#  has_many :roles
+#  has_one :bio
 end
 
 RoleSerializer = Class.new(ActiveModel::Serializer) do
@@ -145,7 +162,7 @@ RoleSerializer = Class.new(ActiveModel::Serializer) do
     "#{name}-#{id}"
   end
 
-  belongs_to :author
+#  belongs_to :author
 end
 
 LikeSerializer = Class.new(ActiveModel::Serializer) do
@@ -158,7 +175,7 @@ LocationSerializer = Class.new(ActiveModel::Serializer) do
   cache only: [:place], skip_digest: true
   attributes :id, :lat, :lng
 
-  belongs_to :place
+#  belongs_to :place
 
   def place
     'Nowhere'
@@ -168,22 +185,22 @@ end
 PlaceSerializer = Class.new(ActiveModel::Serializer) do
   attributes :id, :name
 
-  has_many :locations
+#  has_many :locations
 end
 
 BioSerializer = Class.new(ActiveModel::Serializer) do
   cache except: [:content], skip_digest: true
   attributes :id, :content, :rating
 
-  belongs_to :author
+#  belongs_to :author
 end
 
 BlogSerializer = Class.new(ActiveModel::Serializer) do
   cache key: 'blog'
   attributes :id, :name
 
-  belongs_to :writer
-  has_many :articles
+#  belongs_to :writer
+#  has_many :articles
 end
 
 PaginatedSerializer = Class.new(ActiveModel::Serializer::ArraySerializer) do
@@ -201,19 +218,19 @@ CustomBlogSerializer = Class.new(ActiveModel::Serializer) do
   attribute :id
   attribute :special_attribute
 
-  has_many :articles
+#  has_many :articles
 end
 
 CommentPreviewSerializer = Class.new(ActiveModel::Serializer) do
   attributes :id
 
-  belongs_to :post
+#  belongs_to :post
 end
 
 AuthorPreviewSerializer = Class.new(ActiveModel::Serializer) do
   attributes :id
 
-  has_many :posts
+#  has_many :posts
 end
 
 PostPreviewSerializer = Class.new(ActiveModel::Serializer) do
@@ -223,8 +240,8 @@ PostPreviewSerializer = Class.new(ActiveModel::Serializer) do
 
   attributes :title, :body, :id
 
-  has_many :comments, serializer: CommentPreviewSerializer
-  belongs_to :author, serializer: AuthorPreviewSerializer
+#  has_many :comments, serializer: CommentPreviewSerializer
+#  belongs_to :author, serializer: AuthorPreviewSerializer
 end
 
 PostWithTagsSerializer = Class.new(ActiveModel::Serializer) do
