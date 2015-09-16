@@ -9,5 +9,11 @@ The following configuration options can be set on `ActiveModel::Serializer.confi
 ## JSON API
 
 - `jsonapi_resource_type`: Whether the `type` attributes of resources should be singular or plural. Possible values: `:singular, :plural`. Default: `:plural`.
-- `jsonapi_toplevel_member`: Whether to include a [top level JSON API member](http://jsonapi.org/format/#document-jsonapi-object) in the response document. Default: `false`.
-- `jsonapi_version`: The latest version of the spec the API conforms to. Used when `jsonapi_toplevel_member` is `true`. Default: `'1.0'`.
+- `jsonapi_include_toplevel_member`: Whether to include a [top level JSON API member](http://jsonapi.org/format/#document-jsonapi-object)
+   in the response document.
+   Default: `false`.
+- Used when `jsonapi_include_toplevel_member` is `true`:
+  - `jsonapi_version`: The latest version of the spec the API conforms to.
+    Default: `'1.0'`.
+  - `jsonapi_toplevel_meta`: Optional metadata. Not included if empty.
+    Default: `{}`.

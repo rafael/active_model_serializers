@@ -27,4 +27,4 @@ Features:
 Fixes:
 
 Misc:
-  * adds support for top level jsonapi member support [@beauby]
+  * adds support for top level `jsonapi` member [@beauby, @bf4]

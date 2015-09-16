@@ -27,57 +27,55 @@ module ActiveModel
             @author.posts = []
           end
 
-          def with_config(option, value)
-            old_value = ActiveModel::Serializer.config[option]
-            ActiveModel::Serializer.config[option] = value
-            yield
-          ensure
-            ActiveModel::Serializer.config[option] = old_value
+          def test_toplevel_jsonapi_defaults_to_false
+            assert_equal config.fetch(:jsonapi_include_toplevel_member), false
           end
 
           def test_disable_toplevel_jsonapi
-            with_adapter :json_api do
-              with_config(:jsonapi_toplevel_member, false) do
-                hash = ActiveModel::SerializableResource.new(@post).serializable_hash
-                assert_nil(hash[:jsonapi])
-              end
+            with_config(jsonapi_include_toplevel_member: false) do
+              hash = serialize(@post)
+              assert_nil(hash[:jsonapi])
             end
           end
 
           def test_enable_toplevel_jsonapi
-            with_adapter :json_api do
-              with_config(:jsonapi_toplevel_member, true) do
-                hash = ActiveModel::SerializableResource.new(@post).serializable_hash
-                refute_nil(hash[:jsonapi])
-              end
+            with_config(jsonapi_include_toplevel_member: true) do
+              hash = serialize(@post)
+              refute_nil(hash[:jsonapi])
             end
           end
 
           def test_default_toplevel_jsonapi_version
-            with_adapter :json_api do
-              with_config(:jsonapi_toplevel_member, true) do
-                hash = ActiveModel::SerializableResource.new(@post).serializable_hash
-                assert_equal('1.0', hash[:jsonapi][:version])
-              end
+            with_config(jsonapi_include_toplevel_member: true) do
+              hash = serialize(@post)
+              assert_equal('1.0', hash[:jsonapi][:version])
             end
           end
 
           def test_toplevel_jsonapi_no_meta
-            with_adapter :json_api do
-              with_config(:jsonapi_toplevel_member, true) do
-                hash = ActiveModel::SerializableResource.new(@post).serializable_hash
-                assert_nil(hash[:jsonapi][:meta])
-              end
+            with_config(jsonapi_include_toplevel_member: true) do
+              hash = serialize(@post)
+              assert_nil(hash[:jsonapi][:meta])
             end
           end
 
           def test_toplevel_jsonapi_meta
-            with_adapter :json_api do
-              with_config(:jsonapi_toplevel_member, true) do
-                hash = ActiveModel::SerializableResource.new(@post, jsonapi_toplevel_meta: 'custom').serializable_hash
-                assert_equal('custom', hash[:jsonapi][:meta])
-              end
+            new_config = {
+              jsonapi_include_toplevel_member: true,
+              jsonapi_toplevel_meta: {
+                'copyright' => 'Copyright 2015 Example Corp.'
+              }
+            }
+            with_config(new_config) do
+              hash = serialize(@post)
+              assert_equal(new_config[:jsonapi_toplevel_meta], hash.fetch(:jsonapi).fetch(:meta))
             end
+          end
+
+          private
+
+          def serialize(resource, options = {})
+            serializable(resource, { adapter: :json_api }.merge!(options)).serializable_hash
           end
         end
       end

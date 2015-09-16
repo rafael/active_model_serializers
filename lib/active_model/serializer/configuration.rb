@@ -4,12 +4,12 @@ module ActiveModel
       include ActiveSupport::Configurable
       extend ActiveSupport::Concern
 
+      # Configuration options may also be set in
+      # Serializers and Adapters
       included do |base|
         base.config.array_serializer = ActiveModel::Serializer::ArraySerializer
         base.config.adapter = :attributes
         base.config.jsonapi_resource_type = :plural
-        base.config.jsonapi_toplevel_member = false
-        base.config.jsonapi_version = '1.0'
       end
     end
   end

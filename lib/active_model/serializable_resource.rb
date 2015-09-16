@@ -1,8 +1,7 @@
 require 'set'
 module ActiveModel
   class SerializableResource
-    ADAPTER_OPTION_KEYS = Set.new([:include, :fields, :adapter,
-                                   :jsonapi_toplevel_meta])
+    ADAPTER_OPTION_KEYS = Set.new([:include, :fields, :adapter])
 
     # Primary interface to composing a resource with a serializer and adapter.
     # @return the serializable_resource, ready for #as_json/#to_json/#serializable_hash.

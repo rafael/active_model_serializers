@@ -6,6 +6,32 @@ module ActiveModel
         autoload :PaginationLinks
         autoload :FragmentCache
 
+        module ApiObjects
+          # Make JSON API top-level jsonapi member opt-in
+          # ref: http://jsonapi.org/format/#document-top-level
+          ActiveModel::Serializer.config.jsonapi_include_toplevel_member = false
+          ActiveModel::Serializer.config.jsonapi_version = '1.0'
+          ActiveModel::Serializer.config.jsonapi_toplevel_meta = {}
+          module JsonApi
+            module_function
+
+            def include_member?
+              ActiveModel::Serializer.config.jsonapi_include_toplevel_member
+            end
+
+            def add!(document)
+              object = {
+               jsonapi: {
+                 version: ActiveModel::Serializer.config.jsonapi_version,
+                 meta: ActiveModel::Serializer.config.jsonapi_toplevel_meta
+               }
+              }
+              object[:jsonapi].reject! { |_, v| v.blank? }
+              document.merge!(object)
+            end
+          end
+        end
+
         def initialize(serializer, options = {})
           super
           @include_tree = IncludeTree.from_include_args(options[:include])
@@ -20,6 +46,7 @@ module ActiveModel
 
         def serializable_hash(options = nil)
           options ||= {}
+
           hash =
             if serializer.respond_to?(:each)
               serializable_hash_for_collection(serializer, options)
@@ -27,11 +54,7 @@ module ActiveModel
               serializable_hash_for_single_resource(serializer, options)
             end
 
-          if ActiveModel::Serializer.config.jsonapi_toplevel_member
-            hash[:jsonapi] = {}
-            hash[:jsonapi][:version] = ActiveModel::Serializer.config.jsonapi_version
-            hash[:jsonapi][:meta] = @options[:jsonapi_toplevel_meta] if @options[:jsonapi_toplevel_meta]
-          end
+          ApiObjects::JsonApi.include_member? && ApiObjects::JsonApi.add!(hash)
 
           hash
         end
@@ -41,10 +64,22 @@ module ActiveModel
           ActiveModel::Serializer::Adapter::JsonApi::FragmentCache.new.fragment_cache(root, cached_hash, non_cached_hash)
         end
 
+        def fieldset
+          @fieldset ||=
+            begin
+              fields = instance_options.delete(:fields)
+              if fields
+                ActiveModel::Serializer::Fieldset.new(fields, serializer.json_key)
+              else
+                instance_options[:fieldset]
+              end
+            end
+        end
+
         private
 
         ActiveModel.silence_warnings do
-          attr_reader :fieldset
+          attr_accessor :hash
         end
 
         def serializable_hash_for_collection(options)
