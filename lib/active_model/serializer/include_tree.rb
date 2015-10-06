@@ -90,12 +90,21 @@ module ActiveModel
       end
 
       def key?(key)
-        @hash.key?(key) || @hash.key?(:*) || @hash.key?(:**)
+        case
+        when @hash.key?(:except)
+          !@hash[:except].include?(key)
+        when @hash.key?(:only)
+          @hash[:only].include?(key)
+        else
+          @hash.key?(key) || @hash.key?(:*) || @hash.key?(:**)
+        end
       end
 
       def [](key)
         # TODO(beauby): Adopt a lazy caching strategy for generating subtrees.
         case
+        when @hash.key?(:except) || @hash.key?(:only)
+          self.class.new({})
         when @hash.key?(key)
           self.class.new(@hash[key])
         when @hash.key?(:*)

@@ -43,7 +43,7 @@ module ActionController
 
           def render_resource_with_include
             setup_post
-            render json: @post, include: [:author], adapter: :json_api
+            render json: @post, include: { only: :author }, adapter: :json_api
           end
 
           def render_resource_with_include_of_custom_key_by_original
