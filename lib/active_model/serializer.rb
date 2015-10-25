@@ -42,7 +42,7 @@ module ActiveModel
       elsif resource.respond_to?(:to_ary)
         config.collection_serializer
       else
-        options.fetch(:serializer) { get_serializer_for(resource.class) }
+        options.fetch(:serializer) { lookup_serializer_for(resource.class) }
       end
     end
 
@@ -71,7 +71,7 @@ module ActiveModel
     #   1. class name appended with "Serializer"
     #   2. try again with superclass, if present
     #   3. nil
-    def self.get_serializer_for(klass)
+    def self.lookup_serializer_for(klass)
       serializers_cache.fetch_or_store(klass) do
         # NOTE(beauby): When we drop 1.9.3 support we can lazify the map for perfs.
         serializer_class = serializer_lookup_chain_for(klass).map(&:safe_constantize).find { |x| x }
@@ -79,7 +79,7 @@ module ActiveModel
         if serializer_class
           serializer_class
         elsif klass.superclass
-          get_serializer_for(klass.superclass)
+          lookup_serializer_for(klass.superclass)
         end
       end
     end
