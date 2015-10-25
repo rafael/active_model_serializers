@@ -151,13 +151,13 @@ module ActiveModel
       def test_serializer_file_path_on_nix
         path = '/Users/git/emberjs/ember-crm-backend/app/serializers/lead_serializer.rb'
         caller_line = "#{path}:1:in `<top (required)>'"
-        assert_equal caller_line[ActiveModel::Serializer::CALLER_FILE], path
+        assert_equal caller_line[ActiveModel::Serializer::Cache::CALLER_FILE], path
       end
 
       def test_serializer_file_path_on_windows
         path = 'c:/git/emberjs/ember-crm-backend/app/serializers/lead_serializer.rb'
         caller_line = "#{path}:1:in `<top (required)>'"
-        assert_equal caller_line[ActiveModel::Serializer::CALLER_FILE], path
+        assert_equal caller_line[ActiveModel::Serializer::Cache::CALLER_FILE], path
       end
 
       def test_digest_caller_file
