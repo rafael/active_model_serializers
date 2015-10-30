@@ -45,12 +45,6 @@ module ActiveModel
               assert_equal(@expected, parsed_hash)
             end
 
-            def test_parameters
-              parameters = ActionController::Parameters.new(@hash)
-              parsed_hash = ActiveModel::Serializer::Adapter::JsonApi::Deserialization.parse(parameters)
-              assert_equal(@expected, parsed_hash)
-            end
-
             def test_illformed_payload
               parsed_hash = ActiveModel::Serializer::Adapter::JsonApi::Deserialization.parse({})
               assert_equal({}, parsed_hash)

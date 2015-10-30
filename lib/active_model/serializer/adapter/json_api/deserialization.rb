@@ -5,10 +5,9 @@ module ActiveModel
         module Deserialization
           module_function
 
-          # Parse a Hash or ActionController::Parameters representing a JSON API document
-          # into an ActiveRecord-ready hash.
+          # Parse a Hash representing a JSON API document into an ActiveRecord-ready hash.
           #
-          # @param [Hash|ActionController::Parameters] document
+          # @param [Hash] document
           # @param [Hash] options
           #   fields: Array of symbols and a Hash. Specify whitelisted fields, optionally
           #     specifying the attribute name on the model.
@@ -18,8 +17,6 @@ module ActiveModel
             fields = parse_fields(options[:fields])
 
             hash = {}
-
-            document = document.to_unsafe_h if document.is_a?(ActionController::Parameters)
 
             primary_data = document.fetch('data', {})
             hash[:id] = primary_data['id'] if primary_data['id'] && (fields.nil? || fields[:id])
