@@ -8,7 +8,7 @@ module ActiveModel
           # Parse a Hash or ActionController::Parameters representing a JSON API document
           # into an ActiveRecord-ready hash.
           #
-          # @param [Hash|Object implementing `to_h`] document
+          # @param [Hash|ActionController::Parameters] document
           # @param [Hash] options
           #   fields: Array of symbols and a Hash. Specify whitelisted fields, optionally
           #     specifying the attribute name on the model.
@@ -19,7 +19,8 @@ module ActiveModel
 
             hash = {}
 
-            document = document.to_h unless document.is_a?(Hash)
+            document = document.to_unsafe_h if document.is_a?(ActionController::Parameters)
+
             primary_data = document.fetch('data', {})
             hash[:id] = primary_data['id'] if primary_data['id'] && (fields.nil? || fields[:id])
 
