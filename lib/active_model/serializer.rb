@@ -52,6 +52,7 @@ module ActiveModel
       self._attributes_keys ||= {}
       class_attribute :_links                    # @api private : links definitions, @see Serializer#link
       self._links ||= {}
+      class_attribute :_meta                     # @api private : meta definition, @see Serializer#meta
 
       serializer.class_attribute :_cache         # @api private : the cache object
       serializer.class_attribute :_fragmented    # @api private : @see ::fragmented
@@ -159,6 +160,19 @@ module ActiveModel
       self._cache_options = (options.empty?) ? nil : options
     end
 
+    # Register a meta attribute for the corresponding resource.
+    #
+    # @param [Hash] hash Optional hash
+    # @param [Block] block Optional block
+    def self.meta(hash = nil, &block)
+      self._meta =
+        if !block.nil?
+          block
+        else
+          hash
+        end
+    end
+
     # @param resource [ActiveRecord::Base, ActiveModelSerializers::Model]
     # @return [ActiveModel::Serializer]
     #   Preferentially returns
@@ -261,6 +275,14 @@ module ActiveModel
     # Used by JsonApi adapter to build resource links.
     def links
       self.class._links
+    end
+
+    def meta
+      if self.class._meta.respond_to?(:call)
+        instance_eval(&self.class._meta)
+      else
+        self.class._meta
+      end
     end
 
     protected
